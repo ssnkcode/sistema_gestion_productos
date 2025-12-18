@@ -1,10 +1,49 @@
-// script.js - Versión actualizada completa
+// Datos de ejemplo para productos
+const sampleProducts = [
+    { name: "Arroz Premium 1kg", category: "Alimentos", price: "$2.50", stock: 45, status: "in-stock", supplier: "Distribuidora Martínez" },
+    { name: "Aceite Vegetal 1L", category: "Alimentos", price: "$3.80", stock: 22, status: "in-stock", supplier: "Mayorista Central" },
+    { name: "Detergente Líquido 2L", category: "Limpieza", price: "$5.20", stock: 15, status: "low-stock", supplier: "Importadora del Norte" },
+    { name: "Café Molido 500g", category: "Alimentos", price: "$7.50", stock: 8, status: "low-stock", supplier: "Distribuidora Martínez" },
+    { name: "Papel Higiénico 12 rollos", category: "Hogar", price: "$4.30", stock: 0, status: "out-of-stock", supplier: "Mayorista Central" },
+    { name: "Leche Entera 1L", category: "Lácteos", price: "$1.20", stock: 32, status: "in-stock", supplier: "Distribuidora Martínez" },
+    { name: "Galletas de Chocolate", category: "Snacks", price: "$2.10", stock: 28, status: "in-stock", supplier: "Importadora del Norte" },
+    { name: "Shampoo Anticaspa 400ml", category: "Cuidado Personal", price: "$6.40", stock: 12, status: "low-stock", supplier: "Mayorista Central" }
+];
+
+// Inicializar la tabla de productos
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar ProductManager
-    const productManager = new ProductManager();
+    const productTableBody = document.getElementById('productTableBody');
     
-    // Cargar productos en la tabla al iniciar
-    loadProductsTable();
+    sampleProducts.forEach(product => {
+        const row = document.createElement('tr');
+        
+        // Determinar el texto del estado
+        let statusText = '';
+        if (product.status === 'in-stock') statusText = 'En Stock';
+        else if (product.status === 'low-stock') statusText = 'Stock Bajo';
+        else statusText = 'Sin Stock';
+        
+        row.innerHTML = `
+            <td>
+                <div style="display: flex; align-items: center;">
+                    <div class="product-image">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div style="margin-left: 10px;">
+                        <div style="font-weight: bold;">${product.name}</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">SKU: ${Math.floor(10000 + Math.random() * 90000)}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${product.category}</td>
+            <td style="font-weight: bold;">${product.price}</td>
+            <td>${product.stock} unidades</td>
+            <td><span class="status ${product.status}">${statusText}</span></td>
+            <td>${product.supplier}</td>
+        `;
+        
+        productTableBody.appendChild(row);
+    });
     
     // Manejar la barra lateral en dispositivos móviles
     const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -144,29 +183,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (progress >= 100) {
                 clearInterval(interval);
                 importStatus.innerHTML = '<span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> ¡Importación completada con éxito!</span>';
+                importStatus.textContent = '¡Importación completada con éxito!';
                 importExcelBtn.textContent = 'Completado';
                 importExcelBtn.style.backgroundColor = 'var(--success-color)';
                 
-                // Después de simular importación:
+                // Simular actualización de la tabla
                 setTimeout(() => {
-                    // Datos de ejemplo importados desde Excel
-                    const importedProducts = [
-                        { name: "Nuevo Producto Importado 1", category: "Importados", price: 12.99, stock: 25, supplier: "Nuevo Proveedor" },
-                        { name: "Nuevo Producto Importado 2", category: "Importados", price: 8.50, stock: 30, supplier: "Nuevo Proveedor" },
-                        { name: "Aceite Vegetal 1L", category: "Alimentos", price: 4.10, stock: 30, supplier: "Mayorista Central" }, // Actualizar existente
-                        { name: "Detergente Líquido 2L", category: "Limpieza", price: 5.50, stock: 20, supplier: "Importadora del Norte" } // Actualizar existente
-                    ];
-                    
-                    const result = productManager.importProducts(importedProducts, {
-                        updateExisting: document.getElementById('updateExisting').checked,
-                        addNew: document.getElementById('addNewProducts').checked
-                    });
-                    
-                    loadProductsTable(); // Actualizar tabla
-                    
-                    excelModal.classList.remove('active');
-                    resetExcelModal();
-                    alert(`Importación completada: ${result.imported} nuevos productos, ${result.updated} actualizados.`);
+                    addNewProductFromImport();
+                    setTimeout(() => {
+                        excelModal.classList.remove('active');
+                        resetExcelModal();
+                        alert('Se han importado 15 productos correctamente.');
+                    }, 1000);
                 }, 500);
             }
         }, 300);
@@ -265,47 +293,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 startScrapingBtn.innerHTML = 'Completado';
                 startScrapingBtn.style.backgroundColor = 'var(--success-color)';
                 
-                // Simular actualización de precios desde proveedor
+                // Simular actualización de la tabla
                 setTimeout(() => {
-                    // Actualizar algunos precios aleatoriamente
-                    const products = productManager.getAllProducts();
-                    const updatedProducts = products.map(product => {
-                        if (Math.random() > 0.5) { // 50% de probabilidad de actualizar
-                            const priceChange = 0.9 + Math.random() * 0.2; // Cambio entre 90% y 110%
-                            return {
-                                ...product,
-                                price: parseFloat((product.price * priceChange).toFixed(2)),
-                                stock: Math.max(0, product.stock + Math.floor(Math.random() * 10) - 5) // Cambio aleatorio en stock
-                            };
-                        }
-                        return product;
-                    });
-                    
-                    // Guardar productos actualizados
-                    updatedProducts.forEach((product, index) => {
-                        productManager.updateProduct(product.id, {
-                            price: product.price,
-                            stock: product.stock,
-                            status: productManager.calculateStatus(product.stock)
-                        });
-                    });
-                    
-                    // Agregar algunos productos nuevos simulados
-                    const newProducts = [
-                        { name: "Producto desde Web 1", category: "Web", price: 15.99, stock: 18, supplier: "Proveedor Web" },
-                        { name: "Producto desde Web 2", category: "Web", price: 22.50, stock: 5, supplier: "Proveedor Web" }
-                    ];
-                    
-                    newProducts.forEach(product => {
-                        productManager.addProduct(product);
-                    });
-                    
-                    loadProductsTable(); // Actualizar tabla
-                    
+                    updateProductPrices();
                     setTimeout(() => {
                         scrapingModal.classList.remove('active');
                         resetScrapingModal();
-                        alert('Actualización desde proveedor completada. Se actualizaron precios y se agregaron nuevos productos.');
+                        alert('Actualización desde proveedor completada. Se actualizaron 42 precios y se agregaron 7 nuevos productos.');
                     }, 1000);
                 }, 500);
             }
@@ -327,107 +321,58 @@ document.addEventListener('DOMContentLoaded', function() {
         startScrapingBtn.style.backgroundColor = '';
     }
     
-    // Función para cargar productos en la tabla
-    function loadProductsTable() {
+    // Funciones para simular cambios en la interfaz
+    function addNewProductFromImport() {
+        const newProduct = {
+            name: "Nuevo Producto Importado",
+            category: "Importados",
+            price: "$12.99",
+            stock: 25,
+            status: "in-stock",
+            supplier: "Nuevo Proveedor"
+        };
+        
         const productTableBody = document.getElementById('productTableBody');
-        productTableBody.innerHTML = ''; // Limpiar tabla
+        const row = document.createElement('tr');
         
-        const products = productManager.getAllProducts();
-        
-        products.forEach(product => {
-            const row = document.createElement('tr');
-            row.dataset.productId = product.id;
-            
-            // Determinar el texto del estado
-            let statusText = '';
-            let statusClass = '';
-            
-            switch(product.status) {
-                case 'in-stock':
-                    statusText = 'En Stock';
-                    statusClass = 'in-stock';
-                    break;
-                case 'low-stock':
-                    statusText = 'Stock Bajo';
-                    statusClass = 'low-stock';
-                    break;
-                case 'out-of-stock':
-                    statusText = 'Sin Stock';
-                    statusClass = 'out-of-stock';
-                    break;
-            }
-            
-            row.innerHTML = `
-                <td>
-                    <div style="display: flex; align-items: center;">
-                        <div class="product-image">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <div style="margin-left: 10px;">
-                            <div style="font-weight: bold;">${product.name}</div>
-                            <div style="font-size: 0.8rem; color: #7f8c8d;">SKU: ${product.sku}</div>
-                        </div>
+        row.innerHTML = `
+            <td>
+                <div style="display: flex; align-items: center;">
+                    <div class="product-image">
+                        <i class="fas fa-box"></i>
                     </div>
-                </td>
-                <td>${product.category}</td>
-                <td style="font-weight: bold;">$${product.price.toFixed(2)}</td>
-                <td>${product.stock} unidades</td>
-                <td><span class="status ${statusClass}">${statusText}</span></td>
-                <td>${product.supplier}</td>
-            `;
-            
-            productTableBody.appendChild(row);
+                    <div style="margin-left: 10px;">
+                        <div style="font-weight: bold;">${newProduct.name}</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">SKU: IMPORT-${Math.floor(100 + Math.random() * 900)}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${newProduct.category}</td>
+            <td style="font-weight: bold;">${newProduct.price}</td>
+            <td>${newProduct.stock} unidades</td>
+            <td><span class="status ${newProduct.status}">En Stock</span></td>
+            <td>${newProduct.supplier}</td>
+        `;
+        
+        // Insertar al principio de la tabla
+        productTableBody.insertBefore(row, productTableBody.firstChild);
+    }
+    
+    function updateProductPrices() {
+        const priceCells = document.querySelectorAll('.table td:nth-child(3)');
+        priceCells.forEach(cell => {
+            if (Math.random() > 0.7) { // 30% de probabilidad de cambio
+                const currentPrice = parseFloat(cell.textContent.replace('$', ''));
+                const newPrice = (currentPrice * (0.9 + Math.random() * 0.2)).toFixed(2);
+                cell.textContent = `$${newPrice}`;
+                cell.style.color = 'var(--accent-color)';
+                cell.style.fontWeight = 'bold';
+                
+                // Quitar el resaltado después de 2 segundos
+                setTimeout(() => {
+                    cell.style.color = '';
+                }, 2000);
+            }
         });
-        
-        // Actualizar contador de productos en el dashboard
-        updateDashboardCounters();
     }
-    
-    // Función para actualizar contadores del dashboard
-    function updateDashboardCounters() {
-        const products = productManager.getAllProducts();
-        const productsCount = products.length;
-        
-        // Actualizar el contador de productos en el dashboard
-        const productCountElement = document.querySelector('.dashboard-cards .card:nth-child(1) .card-value');
-        if (productCountElement) {
-            productCountElement.textContent = productsCount.toLocaleString();
-        }
-        
-        // También podrías calcular otros contadores aquí
-        // como productos con stock bajo, productos sin stock, etc.
-    }
-    
-    // Función para agregar producto manualmente (puedes llamarla desde consola para pruebas)
-    window.addManualProduct = function(productData) {
-        const defaultProduct = {
-            name: "Nuevo Producto Manual",
-            category: "General",
-            price: 10.99,
-            stock: 50,
-            supplier: "Proveedor Manual"
-        };
-        
-        const newProduct = productData || defaultProduct;
-        productManager.addProduct(newProduct);
-        loadProductsTable(); // Actualizar tabla
-        alert('Producto agregado exitosamente');
-        return newProduct;
-    };
-    
-    // Función para probar desde consola del navegador
-    window.testAddProduct = function() {
-        const testProduct = {
-            name: "Producto de Prueba",
-            category: "Pruebas",
-            price: 9.99,
-            stock: 100,
-            supplier: "Proveedor de Pruebas"
-        };
-        
-        return addManualProduct(testProduct);
-    };
-    
-    // Inicializar contadores del dashboard
-    updateDashboardCounters();
 });
