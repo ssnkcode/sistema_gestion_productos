@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Gestión para Comercios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./src/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Gestor Comercial</h2>
+                <p>Administración completa</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#"><i class="fas fa-boxes"></i> Inventario</a></li>
+                <li><a href="#"><i class="fas fa-shopping-cart"></i> Ventas</a></li>
+                <li><a href="#"><i class="fas fa-truck"></i> Proveedores</a></li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Clientes</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Configuración</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar">CM</div>
+                        <div>
+                            <div class="user-name">SsnkCode</div>
+                            <div class="user-role">Administrador</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Dashboard Cards -->
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Productos en Inventario</div>
+                                <div class="card-value">1,248</div>
+                                <div class="card-change positive"><i class="fas fa-arrow-up"></i> 5% este mes</div>
+                            </div>
+                            <div class="card-icon inventory">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Ventas Hoy</div>
+                                <div class="card-value">$4,580</div>
+                                <div class="card-change positive"><i class="fas fa-arrow-up"></i> 12% vs ayer</div>
+                            </div>
+                            <div class="card-icon sales">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Proveedores Activos</div>
+                                <div class="card-value">24</div>
+                                <div class="card-change positive"><i class="fas fa-arrow-up"></i> 2 nuevos</div>
+                            </div>
+                            <div class="card-icon providers">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Reportes Pendientes</div>
+                                <div class="card-value">3</div>
+                                <div class="card-change negative"><i class="fas fa-arrow-down"></i> 1 completado</div>
+                            </div>
+                            <div class="card-icon reports">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management Section -->
+                <h2 class="section-title">Gestión de Productos</h2>
+                <div class="data-management">
+                    <div class="management-buttons">
+                        <div class="management-btn" id="excelUploadBtn">
+                            <div class="btn-icon">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <h3 class="btn-title">Cargar desde Excel</h3>
+                            <p class="btn-description">Importa productos, precios y stock desde un archivo Excel</p>
+                            <button class="btn-action">Cargar Excel</button>
+                        </div>
+
+                        <div class="management-btn" id="webScrapingBtn">
+                            <div class="btn-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <h3 class="btn-title">Actualizar desde Proveedor</h3>
+                            <p class="btn-description">Actualiza precios y productos automáticamente desde la web del proveedor</p>
+                            <button class="btn-action">Conectar a Proveedor</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product List -->
+                <h2 class="section-title">Productos Recientes</h2>
+                <div class="product-table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Proveedor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- Los productos se cargarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para carga de Excel -->
+    <div class="modal" id="excelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cargar Productos desde Excel</h3>
+                <button class="modal-close" id="closeExcelModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Seleccione archivo Excel</label>
+                    <div class="file-upload-area" id="excelDropArea">
+                        <div class="file-upload-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <div class="file-upload-text">
+                            <p>Arrastra y suelta tu archivo Excel aquí o haz clic para seleccionar</p>
+                            <p>Soportado: .xlsx, .xls, .csv</p>
+                        </div>
+                        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" hidden>
+                    </div>
+                    <div id="fileInfo" style="display: none;">
+                        <div class="file-selected">
+                            <div>
+                                <div class="file-name" id="fileName"></div>
+                                <div class="file-size" id="fileSize"></div>
+                            </div>
+                            <button id="removeFileBtn">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Opciones de importación</label>
+                    <div>
+                        <input type="checkbox" id="updateExisting" checked>
+                        <label for="updateExisting">Actualizar productos existentes</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="addNewProducts" checked>
+                        <label for="addNewProducts">Agregar nuevos productos</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Progreso de importación</label>
+                    <div style="background-color: #f0f0f0; border-radius: 4px; height: 20px;">
+                        <div id="importProgress" style="background-color: var(--secondary-color); width: 0%; height: 100%; border-radius: 4px; transition: width 0.3s;"></div>
+                    </div>
+                    <div id="importStatus" style="margin-top: 10px; text-align: center;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelExcelBtn">Cancelar</button>
+                <button class="btn btn-primary" id="importExcelBtn" disabled>Importar Productos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para web scraping -->
+    <div class="modal" id="scrapingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Actualizar desde Proveedor</h3>
+                <button class="modal-close" id="closeScrapingModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>URL del sitio web del proveedor</label>
+                    <input type="url" class="form-control" id="providerUrl" placeholder="https://ejemplo.com/catalogo">
+                </div>
+
+                <div class="form-group">
+                    <label>Seleccione proveedor</label>
+                    <select class="form-control" id="providerSelect">
+                        <option value="">Seleccione un proveedor</option>
+                        <option value="1">Distribuidora Martínez</option>
+                        <option value="2">Mayorista Central</option>
+                        <option value="3">Importadora del Norte</option>
+                        <option value="4">Otro proveedor</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Credenciales de acceso (si es necesario)</label>
+                    <input type="text" class="form-control" id="providerUser" placeholder="Usuario" style="margin-bottom: 10px;">
+                    <input type="password" class="form-control" id="providerPass" placeholder="Contraseña">
+                </div>
+
+                <div class="form-group">
+                    <label>¿Qué datos desea actualizar?</label>
+                    <div>
+                        <input type="checkbox" id="updatePrices" checked>
+                        <label for="updatePrices">Precios</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="updateProducts" checked>
+                        <label for="updateProducts">Nuevos productos</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="updateStock">
+                        <label for="updateStock">Niveles de stock</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado de la conexión</label>
+                    <div id="scrapingStatus" style="padding: 15px; background-color: #f9f9f9; border-radius: 4px; text-align: center;">
+                        <div id="statusText">Esperando configuración...</div>
+                        <div id="progressDetails" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelScrapingBtn">Cancelar</button>
+                <button class="btn btn-primary" id="startScrapingBtn">Iniciar Actualización</button>
+            </div>
+        </div>
+    </div>
+    <script src="./src/js/script.js"></script>
+</body>
+</html>
