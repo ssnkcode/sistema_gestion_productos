@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario | Gestor Comercial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./src/css/style.css">
+    <link rel="stylesheet" href="./src/css/inventario/inventario.css">
+    <link rel="stylesheet" href="./src/css/inventario/query-inventario.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Gestor Comercial</h2>
+                <p>Administración completa</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="./index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" class="active"><i class="fas fa-boxes"></i> Inventario</a></li>
+                <li><a href="#"><i class="fas fa-shopping-cart"></i> Ventas</a></li>
+                <li><a href="#"><i class="fas fa-truck"></i> Proveedores</a></li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Clientes</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Configuración</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Inventario</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="addProductBtn">
+                        <i class="fas fa-plus"></i> Nuevo Producto
+                    </button>
+                    <div class="user-info">
+                        <div class="user-avatar">CM</div>
+                        <div>
+                            <div class="user-name">SsnkCode</div>
+                            <div class="user-role">Administrador</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Inventory Stats -->
+                <div class="inventory-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value">1,248</div>
+                            <div class="stat-label">Total Productos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value">1,025</div>
+                            <div class="stat-label">En Stock</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value">183</div>
+                            <div class="stat-label">Stock Bajo</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value">40</div>
+                            <div class="stat-label">Agotados</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value">$84,520</div>
+                            <div class="stat-label">Valor Total</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Controls -->
+                <div class="inventory-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar productos...">
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="">Todas las categorías</option>
+                            <option value="electronica">Electrónica</option>
+                            <option value="ropa">Ropa</option>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="hogar">Hogar</option>
+                            <option value="oficina">Oficina</option>
+                        </select>
+                        
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="in-stock">En Stock</option>
+                            <option value="low-stock">Stock Bajo</option>
+                            <option value="out-of-stock">Agotado</option>
+                        </select>
+                        
+                        <button class="btn btn-secondary" id="exportBtn">
+                            <i class="fas fa-file-export"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inventory Table -->
+                <div class="inventory-table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>Producto</th>
+                                <th>Código</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Proveedor</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Los productos se cargarán aquí -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button class="pagination-btn" id="prevPage">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="page-numbers">
+                            <span class="page-number active">1</span>
+                            <span class="page-number">2</span>
+                            <span class="page-number">3</span>
+                            <span class="page-number">4</span>
+                            <span class="page-number">5</span>
+                        </div>
+                        <button class="pagination-btn" id="nextPage">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="page-info">
+                            Mostrando 1-15 de 1,248 productos
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>Acciones Rápidas</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="bulkUpdateBtn">
+                            <i class="fas fa-edit"></i>
+                            <span>Actualización Masiva</span>
+                        </button>
+                        <button class="action-btn" id="lowStockReportBtn">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reporte Stock Bajo</span>
+                        </button>
+                        <button class="action-btn" id="importExportBtn">
+                            <i class="fas fa-file-import"></i>
+                            <span>Importar/Exportar</span>
+                        </button>
+                        <button class="action-btn" id="inventoryAuditBtn">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Auditoría</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para agregar/editar producto -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Agregar Nuevo Producto</h3>
+                <button class="modal-close" id="closeProductModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productName">Nombre del Producto *</label>
+                            <input type="text" id="productName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCode">Código *</label>
+                            <input type="text" id="productCode" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productCategory">Categoría *</label>
+                            <select id="productCategory" class="form-control" required>
+                                <option value="">Seleccionar categoría</option>
+                                <option value="electronica">Electrónica</option>
+                                <option value="ropa">Ropa</option>
+                                <option value="alimentos">Alimentos</option>
+                                <option value="hogar">Hogar</option>
+                                <option value="oficina">Oficina</option>
+                                <option value="otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productSupplier">Proveedor</label>
+                            <select id="productSupplier" class="form-control">
+                                <option value="">Seleccionar proveedor</option>
+                                <option value="1">Distribuidora Martínez</option>
+                                <option value="2">Mayorista Central</option>
+                                <option value="3">Importadora del Norte</option>
+                                <option value="4">Proveedor Externo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productPrice">Precio de Compra *</label>
+                            <div class="input-with-symbol">
+                                <span class="input-symbol">$</span>
+                                <input type="number" id="productPrice" class="form-control" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productSalePrice">Precio de Venta *</label>
+                            <div class="input-with-symbol">
+                                <span class="input-symbol">$</span>
+                                <input type="number" id="productSalePrice" class="form-control" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productStock">Stock Inicial *</label>
+                            <input type="number" id="productStock" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productMinStock">Stock Mínimo</label>
+                            <input type="number" id="productMinStock" class="form-control" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="productMaxStock">Stock Máximo</label>
+                            <input type="number" id="productMaxStock" class="form-control" value="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription">Descripción</label>
+                        <textarea id="productDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productImage">Imagen del Producto</label>
+                        <div class="file-upload-area" id="imageUploadArea">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="file-upload-text">
+                                <p>Arrastra y suelta la imagen aquí o haz clic para seleccionar</p>
+                                <p>Soportado: JPG, PNG, GIF (max 2MB)</p>
+                            </div>
+                            <input type="file" id="productImage" accept="image/*" hidden>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="productActive" checked>
+                            <label for="productActive">Producto activo</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelProductBtn">Cancelar</button>
+                <button class="btn btn-primary" id="saveProductBtn">Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para confirmación de eliminación -->
+    <div class="modal confirm-modal" id="confirmDeleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmar Eliminación</h3>
+                <button class="modal-close" id="closeConfirmModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p>¿Está seguro que desea eliminar este producto? Esta acción no se puede deshacer.</p>
+                <p class="product-to-delete" id="productToDeleteName"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Eliminar Producto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para actualización masiva -->
+    <div class="modal" id="bulkUpdateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Actualización Masiva de Productos</h3>
+                <button class="modal-close" id="closeBulkModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Seleccione acción a aplicar</label>
+                    <select id="bulkAction" class="form-control">
+                        <option value="">Seleccionar acción</option>
+                        <option value="price-increase">Aumentar precios (%)</option>
+                        <option value="price-decrease">Reducir precios (%)</option>
+                        <option value="update-category">Cambiar categoría</option>
+                        <option value="update-supplier">Cambiar proveedor</option>
+                        <option value="update-status">Cambiar estado</option>
+                    </select>
+                </div>
+                
+                <div id="bulkActionDetails" style="display: none;">
+                    <div class="form-group">
+                        <label id="bulkActionLabel"></label>
+                        <input type="text" id="bulkActionValue" class="form-control" placeholder="Valor">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Productos seleccionados: <span id="selectedCount">0</span></label>
+                    <div class="selected-products" id="selectedProductsList">
+                        <!-- Lista de productos seleccionados -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBulkBtn">Cancelar</button>
+                <button class="btn btn-primary" id="applyBulkBtn" disabled>Aplicar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./src/js/inventario/inventario.js"></script>
+</body>
+</html>
