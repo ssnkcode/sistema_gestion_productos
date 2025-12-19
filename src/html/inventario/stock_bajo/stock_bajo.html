@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Stock Bajo | Gestor Comercial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/inventario/inventario.css">
+    <link rel="stylesheet" href="../../../css/inventario/stock_bajo/stock_bajo.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Gestor Comercial</h2>
+                <p>Administración completa</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="../../../index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="../../inventario.html"><i class="fas fa-boxes"></i> Inventario</a></li>
+                <li><a href="#"><i class="fas fa-shopping-cart"></i> Ventas</a></li>
+                <li><a href="#"><i class="fas fa-truck"></i> Proveedores</a></li>
+                <li><a href="#" class="active"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Clientes</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Configuración</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Reporte de Stock Bajo</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="printReportBtn">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                    <button class="btn btn-success" id="requestRestockBtn">
+                        <i class="fas fa-sync-alt"></i> Solicitar Reposición
+                    </button>
+                    <div class="user-info">
+                        <div class="user-avatar">CM</div>
+                        <div>
+                            <div class="user-name">SsnkCode</div>
+                            <div class="user-role">Administrador</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content stock-report-content">
+                <!-- Report Stats -->
+                <div class="report-stats">
+                    <div class="stat-card critical">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="totalLowStock">0</div>
+                            <div class="stat-label">Productos con Stock Bajo</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card warning">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="totalRiskValue">$0</div>
+                            <div class="stat-label">Valor en Riesgo</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card info">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="avgRestockTime">0</div>
+                            <div class="stat-label">Días Promedio Reposición</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card success">
+                        <div class="stat-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="suppliersCount">0</div>
+                            <div class="stat-label">Proveedores a Contactar</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Controls -->
+                <div class="report-controls">
+                    <div class="control-group">
+                        <label for="categoryFilterReport">Filtrar por Categoría:</label>
+                        <select id="categoryFilterReport" class="filter-select">
+                            <option value="">Todas las categorías</option>
+                            <option value="electronica">Electrónica</option>
+                            <option value="ropa">Ropa</option>
+                            <option value="alimentos">Alimentos</option>
+                            <option value="hogar">Hogar</option>
+                            <option value="oficina">Oficina</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="priorityFilter">Prioridad:</label>
+                        <select id="priorityFilter" class="filter-select">
+                            <option value="">Todas las prioridades</option>
+                            <option value="critical">Crítico (Stock < 2)</option>
+                            <option value="high">Alto (Stock 2-5)</option>
+                            <option value="medium">Medio (Stock 5-10)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="daysFilter">Días en stock bajo:</label>
+                        <select id="daysFilter" class="filter-select">
+                            <option value="">Cualquier tiempo</option>
+                            <option value="7">Más de 7 días</option>
+                            <option value="15">Más de 15 días</option>
+                            <option value="30">Más de 30 días</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button class="btn btn-secondary" id="applyFiltersBtn">
+                            <i class="fas fa-filter"></i> Aplicar Filtros
+                        </button>
+                        <button class="btn btn-secondary" id="resetFiltersBtn">
+                            <i class="fas fa-redo"></i> Restablecer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>Stock Bajo por Categoría</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>Evolución del Stock Bajo</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="report-table-container">
+                    <div class="table-header">
+                        <h3>Productos con Stock Bajo</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-sm btn-secondary" id="selectAllProducts">
+                                <i class="fas fa-check-square"></i> Seleccionar Todos
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="exportSelectedBtn">
+                                <i class="fas fa-file-export"></i> Exportar Seleccionados
+                            </button>
+                            <button class="btn btn-sm btn-success" id="restockSelectedBtn">
+                                <i class="fas fa-cart-plus"></i> Reponer Seleccionados
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAllReport">
+                                </th>
+                                <th>Producto</th>
+                                <th>Código</th>
+                                <th>Categoría</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Diferencia</th>
+                                <th>Días Stock Bajo</th>
+                                <th>Precio Unitario</th>
+                                <th>Valor en Riesgo</th>
+                                <th>Proveedor</th>
+                                <th>Prioridad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lowStockTableBody">
+                            <!-- Los productos con stock bajo se cargarán aquí -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Table Summary -->
+                    <div class="table-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Total productos mostrados:</span>
+                            <span class="summary-value" id="productsShown">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Valor total en riesgo:</span>
+                            <span class="summary-value" id="totalRiskTable">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Cantidad a reponer:</span>
+                            <span class="summary-value" id="totalToRestock">0 unidades</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Costo estimado reposición:</span>
+                            <span class="summary-value" id="estimatedCost">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="export-options">
+                    <h3>Opciones de Exportación</h3>
+                    <div class="export-buttons">
+                        <button class="export-btn pdf" id="exportPDFBtn">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Exportar a PDF</span>
+                            <small>Para imprimir o archivar</small>
+                        </button>
+                        
+                        <button class="export-btn excel" id="exportExcelBtn">
+                            <i class="fas fa-file-excel"></i>
+                            <span>Exportar a Excel</span>
+                            <small>Para análisis detallado</small>
+                        </button>
+                        
+                        <button class="export-btn csv" id="exportCSVBtn">
+                            <i class="fas fa-file-csv"></i>
+                            <span>Exportar a CSV</span>
+                            <small>Para importar en otros sistemas</small>
+                        </button>
+                        
+                        <button class="export-btn email" id="exportEmailBtn">
+                            <i class="fas fa-envelope"></i>
+                            <span>Enviar por Email</span>
+                            <small>Enviar reporte al administrador</small>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Supplier Recommendations -->
+                <div class="supplier-recommendations">
+                    <h3>Proveedores Recomendados para Reposición</h3>
+                    <div class="suppliers-list" id="suppliersList">
+                        <!-- Proveedores recomendados se cargarán aquí -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="report-quick-actions">
+                    <h3>Acciones Rápidas</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="generatePurchaseOrderBtn">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Generar Orden de Compra</span>
+                        </button>
+                        <button class="action-btn" id="sendAlertsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span>Enviar Alertas</span>
+                        </button>
+                        <button class="action-btn" id="scheduleRestockBtn">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Programar Reposición</span>
+                        </button>
+                        <button class="action-btn" id="comparePricesBtn">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Comparar Precios</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para solicitar reposición -->
+    <div class="modal" id="restockModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Solicitar Reposición de Productos</h3>
+                <button class="modal-close" id="closeRestockModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="restockSupplier">Seleccionar Proveedor:</label>
+                    <select id="restockSupplier" class="form-control">
+                        <option value="">Seleccionar proveedor</option>
+                        <!-- Proveedores se cargarán dinámicamente -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="restockPriority">Prioridad de Reposición:</label>
+                    <select id="restockPriority" class="form-control">
+                        <option value="normal">Normal (7-14 días)</option>
+                        <option value="urgent">Urgente (2-5 días)</option>
+                        <option value="emergency">Emergencia (24-48 horas)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="restockNotes">Notas adicionales:</label>
+                    <textarea id="restockNotes" class="form-control" rows="3" placeholder="Instrucciones especiales para el proveedor..."></textarea>
+                </div>
+                
+                <div class="selected-products-summary">
+                    <h4>Productos a Reponer:</h4>
+                    <div class="products-list" id="restockProductsList">
+                        <!-- Lista de productos se cargará dinámicamente -->
+                    </div>
+                    <div class="summary-total">
+                        <strong>Total estimado: </strong><span id="restockTotal">$0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRestockBtn">Cancelar</button>
+                <button class="btn btn-primary" id="confirmRestockBtn">Confirmar Reposición</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para exportar reporte -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Exportar Reporte</h3>
+                <button class="modal-close" id="closeExportModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options-modal">
+                    <div class="export-option">
+                        <input type="radio" id="exportAll" name="exportScope" value="all" checked>
+                        <label for="exportAll">
+                            <strong>Exportar todo el reporte</strong>
+                            <small>Incluye todos los productos con stock bajo</small>
+                        </label>
+                    </div>
+                    
+                    <div class="export-option">
+                        <input type="radio" id="exportFiltered" name="exportScope" value="filtered">
+                        <label for="exportFiltered">
+                            <strong>Exportar productos filtrados</strong>
+                            <small>Solo los productos visibles con los filtros aplicados</small>
+                        </label>
+                    </div>
+                    
+                    <div class="export-option">
+                        <input type="radio" id="exportSelected" name="exportScope" value="selected">
+                        <label for="exportSelected">
+                            <strong>Exportar productos seleccionados</strong>
+                            <small>Solo los productos marcados con el checkbox</small>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exportFormat">Formato de exportación:</label>
+                    <select id="exportFormat" class="form-control">
+                        <option value="pdf">PDF (Recomendado para imprimir)</option>
+                        <option value="excel">Excel XLSX (Para análisis)</option>
+                        <option value="csv">CSV (Para otros sistemas)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exportEmail">Enviar a email (opcional):</label>
+                    <input type="email" id="exportEmail" class="form-control" placeholder="email@ejemplo.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelExportBtn">Cancelar</button>
+                <button class="btn btn-primary" id="confirmExportBtn">Exportar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../../js/inventario/stock_bajo/stock_bajo.js"></script>
+</body>
+</html>
