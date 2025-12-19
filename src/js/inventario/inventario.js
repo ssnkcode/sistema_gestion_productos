@@ -734,47 +734,201 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectedCount();
     });
     
+    // ============================================
+    // NUEVO CÓDIGO PARA EXPORTACIÓN A EXCEL PERFECTA
+    // ============================================
+    
     // Exportar datos
     exportBtn.addEventListener('click', () => {
         const filteredProducts = getFilteredProducts();
-        const csvContent = convertToCSV(filteredProducts);
-        downloadCSV(csvContent, 'inventario.csv');
-        showNotification('Datos exportados correctamente', 'success');
+        
+        if (filteredProducts.length === 0) {
+            showNotification('No hay datos para exportar', 'info');
+            return;
+        }
+        
+        showNotification('Generando archivo...', 'info');
+        
+        // Usar método simple que siempre funciona
+        exportToExcelNative(filteredProducts);
     });
     
-    // Funciones para exportar a CSV
-    function convertToCSV(products) {
-        const headers = ['Nombre', 'Código', 'Categoría', 'Precio Compra', 'Precio Venta', 'Stock', 'Stock Mínimo', 'Stock Máximo', 'Estado', 'Proveedor', 'Descripción'];
-        const rows = products.map(product => [
-            `"${product.name}"`,
-            `"${product.code}"`,
-            `"${product.category}"`,
-            product.price,
-            product.salePrice,
-            product.stock,
-            product.minStock,
-            product.maxStock,
-            `"${getStatusText(getStockStatus(product.stock, product.minStock))}"`,
-            `"${product.supplier}"`,
-            `"${product.description}"`
-        ]);
-        
-        return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    // Función para formatear fecha actual
+    function getCurrentDateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}${month}${day}_${hours}${minutes}`;
     }
     
-    function downloadCSV(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // Método NATIVO para exportar a Excel (HTML Table)
+    function exportToExcelNative(products) {
+        try {
+            // Crear tabla HTML temporal
+            const table = document.createElement('table');
+            table.style.borderCollapse = 'collapse';
+            table.style.width = '100%';
+            
+            // Crear encabezados
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            headerRow.style.backgroundColor = '#4CAF50';
+            headerRow.style.color = 'white';
+            
+            const headers = [
+                'Nombre', 'Código', 'Categoría', 'Precio Compra', 
+                'Precio Venta', 'Stock', 'Stock Mínimo', 'Stock Máximo', 
+                'Estado', 'Proveedor', 'Descripción'
+            ];
+            
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                th.style.border = '1px solid #ddd';
+                th.style.padding = '8px';
+                th.style.textAlign = 'left';
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // Crear cuerpo de la tabla
+            const tbody = document.createElement('tbody');
+            
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                
+                const cells = [
+                    product.name,
+                    product.code,
+                    product.category.charAt(0).toUpperCase() + product.category.slice(1),
+                    `$${product.price.toFixed(2)}`,
+                    `$${product.salePrice.toFixed(2)}`,
+                    product.stock,
+                    product.minStock,
+                    product.maxStock,
+                    getStatusText(getStockStatus(product.stock, product.minStock)),
+                    product.supplier,
+                    product.description
+                ];
+                
+                cells.forEach(cellText => {
+                    const td = document.createElement('td');
+                    td.textContent = cellText;
+                    td.style.border = '1px solid #ddd';
+                    td.style.padding = '8px';
+                    row.appendChild(td);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            
+            // Formatear fecha para mostrar en el documento
+            const fechaExportacion = new Date().toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Crear documento HTML con la tabla
+            const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Inventario Exportado</title>
+                <style>
+                    * {
+                        font-family: Arial, sans-serif;
+                    }
+                    h1 {
+                        color: #2c3e50;
+                        margin-bottom: 5px;
+                    }
+                    .info {
+                        color: #7f8c8d;
+                        margin-bottom: 20px;
+                        font-size: 14px;
+                    }
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin-top: 20px;
+                    }
+                    th {
+                        background-color: #4CAF50;
+                        color: white;
+                        border: 1px solid #ddd;
+                        padding: 10px 8px;
+                        text-align: left;
+                        font-weight: bold;
+                    }
+                    td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        vertical-align: top;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    tr:hover {
+                        background-color: #f5f5f5;
+                    }
+                    .total {
+                        font-weight: bold;
+                        color: #2c3e50;
+                        margin-top: 20px;
+                        padding: 10px;
+                        background-color: #ecf0f1;
+                        border-radius: 4px;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Inventario - Gestor Comercial</h1>
+                <div class="info">
+                    <div>Fecha de exportación: ${fechaExportacion}</div>
+                    <div>Total de productos exportados: ${products.length}</div>
+                </div>
+                ${table.outerHTML}
+                <div class="total">
+                    Resumen: ${products.length} productos exportados correctamente
+                </div>
+            </body>
+            </html>
+            `;
+            
+            // Crear blob y descargar
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Inventario_${getCurrentDateTime()}.xls`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Archivo Excel generado con ${products.length} productos`, 'success');
+            
+        } catch (error) {
+            console.error('Error al exportar:', error);
+            showNotification('Error al generar el archivo', 'info');
+        }
     }
+    
+    // ============================================
+    // FIN DEL NUEVO CÓDIGO PARA EXPORTACIÓN
+    // ============================================
     
     // Eventos para el modal de actualización masiva
     bulkActionSelect.addEventListener('change', function() {
