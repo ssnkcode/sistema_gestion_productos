@@ -1,12 +1,8 @@
-// script.js - Versión actualizada completa
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar ProductManager
     const productManager = new ProductManager();
     
-    // Cargar productos en la tabla al iniciar
     loadProductsTable();
     
-    // Manejar la barra lateral en dispositivos móviles
     const toggleSidebarBtn = document.getElementById('toggleSidebar');
     const sidebar = document.getElementById('sidebar');
     
@@ -14,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.toggle('active');
     });
     
-    // Cerrar sidebar al hacer clic fuera en móviles
     document.addEventListener('click', function(event) {
         if (window.innerWidth <= 992) {
             if (!sidebar.contains(event.target) && !toggleSidebarBtn.contains(event.target) && sidebar.classList.contains('active')) {
@@ -23,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Modal de carga de Excel
     const excelModal = document.getElementById('excelModal');
     const excelUploadBtn = document.getElementById('excelUploadBtn');
     const closeExcelModal = document.getElementById('closeExcelModal');
@@ -38,12 +32,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const importProgress = document.getElementById('importProgress');
     const importStatus = document.getElementById('importStatus');
     
-    // Abrir modal de Excel
     excelUploadBtn.addEventListener('click', function() {
         excelModal.classList.add('active');
     });
     
-    // Cerrar modal de Excel
     closeExcelModal.addEventListener('click', function() {
         excelModal.classList.remove('active');
         resetExcelModal();
@@ -54,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
         resetExcelModal();
     });
     
-    // Manejar arrastrar y soltar archivos
     excelDropArea.addEventListener('click', function() {
         excelFileInput.click();
     });
@@ -80,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Manejar selección de archivo
     excelFileInput.addEventListener('change', function() {
         if (this.files.length) {
             handleFileSelection(this.files[0]);
@@ -88,20 +78,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function handleFileSelection(file) {
-        // Validar tipo de archivo
         const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'];
         if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/)) {
             alert('Por favor, seleccione un archivo Excel o CSV válido.');
             return;
         }
         
-        // Mostrar información del archivo
         fileName.textContent = file.name;
         fileSize.textContent = formatFileSize(file.size);
         fileInfo.style.display = 'block';
         importExcelBtn.disabled = false;
         
-        // Resaltar área de drop
         excelDropArea.style.borderColor = 'var(--success-color)';
         excelDropArea.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
     }
@@ -114,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
-    // Eliminar archivo seleccionado
     removeFileBtn.addEventListener('click', function() {
         excelFileInput.value = '';
         fileInfo.style.display = 'none';
@@ -123,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
         excelDropArea.style.backgroundColor = '#f9f9f9';
     });
     
-    // Simular importación de Excel
     importExcelBtn.addEventListener('click', function() {
         importExcelBtn.disabled = true;
         importExcelBtn.innerHTML = '<span class="spinner"></span> Importando...';
@@ -147,14 +132,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 importExcelBtn.textContent = 'Completado';
                 importExcelBtn.style.backgroundColor = 'var(--success-color)';
                 
-                // Después de simular importación:
                 setTimeout(() => {
-                    // Datos de ejemplo importados desde Excel
                     const importedProducts = [
                         { name: "Nuevo Producto Importado 1", category: "Importados", price: 12.99, stock: 25, supplier: "Nuevo Proveedor" },
                         { name: "Nuevo Producto Importado 2", category: "Importados", price: 8.50, stock: 30, supplier: "Nuevo Proveedor" },
-                        { name: "Aceite Vegetal 1L", category: "Alimentos", price: 4.10, stock: 30, supplier: "Mayorista Central" }, // Actualizar existente
-                        { name: "Detergente Líquido 2L", category: "Limpieza", price: 5.50, stock: 20, supplier: "Importadora del Norte" } // Actualizar existente
+                        { name: "Aceite Vegetal 1L", category: "Alimentos", price: 4.10, stock: 30, supplier: "Mayorista Central" },
+                        { name: "Detergente Líquido 2L", category: "Limpieza", price: 5.50, stock: 20, supplier: "Importadora del Norte" }
                     ];
                     
                     const result = productManager.importProducts(importedProducts, {
@@ -162,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         addNew: document.getElementById('addNewProducts').checked
                     });
                     
-                    loadProductsTable(); // Actualizar tabla
+                    loadProductsTable();
                     
                     excelModal.classList.remove('active');
                     resetExcelModal();
@@ -184,7 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
         excelDropArea.style.backgroundColor = '#f9f9f9';
     }
     
-    // Modal de web scraping
     const scrapingModal = document.getElementById('scrapingModal');
     const webScrapingBtn = document.getElementById('webScrapingBtn');
     const closeScrapingModal = document.getElementById('closeScrapingModal');
@@ -195,12 +177,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusText = document.getElementById('statusText');
     const progressDetails = document.getElementById('progressDetails');
     
-    // Abrir modal de web scraping
     webScrapingBtn.addEventListener('click', function() {
         scrapingModal.classList.add('active');
     });
     
-    // Cerrar modal de web scraping
     closeScrapingModal.addEventListener('click', function() {
         scrapingModal.classList.remove('active');
         resetScrapingModal();
@@ -211,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
         resetScrapingModal();
     });
     
-    // Cambiar URL según proveedor seleccionado
     providerSelect.addEventListener('change', function() {
         const providerUrls = {
             '1': 'https://distribuidora-martinez.com/catalogo',
@@ -228,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Simular web scraping
     startScrapingBtn.addEventListener('click', function() {
         if (!providerUrl.value) {
             alert('Por favor, ingrese la URL del proveedor.');
@@ -265,23 +243,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 startScrapingBtn.innerHTML = 'Completado';
                 startScrapingBtn.style.backgroundColor = 'var(--success-color)';
                 
-                // Simular actualización de precios desde proveedor
                 setTimeout(() => {
-                    // Actualizar algunos precios aleatoriamente
                     const products = productManager.getAllProducts();
                     const updatedProducts = products.map(product => {
-                        if (Math.random() > 0.5) { // 50% de probabilidad de actualizar
-                            const priceChange = 0.9 + Math.random() * 0.2; // Cambio entre 90% y 110%
+                        if (Math.random() > 0.5) {
+                            const priceChange = 0.9 + Math.random() * 0.2;
                             return {
                                 ...product,
                                 price: parseFloat((product.price * priceChange).toFixed(2)),
-                                stock: Math.max(0, product.stock + Math.floor(Math.random() * 10) - 5) // Cambio aleatorio en stock
+                                stock: Math.max(0, product.stock + Math.floor(Math.random() * 10) - 5)
                             };
                         }
                         return product;
                     });
                     
-                    // Guardar productos actualizados
                     updatedProducts.forEach((product, index) => {
                         productManager.updateProduct(product.id, {
                             price: product.price,
@@ -290,7 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     });
                     
-                    // Agregar algunos productos nuevos simulados
                     const newProducts = [
                         { name: "Producto desde Web 1", category: "Web", price: 15.99, stock: 18, supplier: "Proveedor Web" },
                         { name: "Producto desde Web 2", category: "Web", price: 22.50, stock: 5, supplier: "Proveedor Web" }
@@ -300,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         productManager.addProduct(product);
                     });
                     
-                    loadProductsTable(); // Actualizar tabla
+                    loadProductsTable();
                     
                     setTimeout(() => {
                         scrapingModal.classList.remove('active');
@@ -327,10 +301,9 @@ document.addEventListener('DOMContentLoaded', function() {
         startScrapingBtn.style.backgroundColor = '';
     }
     
-    // Función para cargar productos en la tabla
     function loadProductsTable() {
         const productTableBody = document.getElementById('productTableBody');
-        productTableBody.innerHTML = ''; // Limpiar tabla
+        productTableBody.innerHTML = '';
         
         const products = productManager.getAllProducts();
         
@@ -338,7 +311,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('tr');
             row.dataset.productId = product.id;
             
-            // Determinar el texto del estado
             let statusText = '';
             let statusClass = '';
             
@@ -379,26 +351,19 @@ document.addEventListener('DOMContentLoaded', function() {
             productTableBody.appendChild(row);
         });
         
-        // Actualizar contador de productos en el dashboard
         updateDashboardCounters();
     }
     
-    // Función para actualizar contadores del dashboard
     function updateDashboardCounters() {
         const products = productManager.getAllProducts();
         const productsCount = products.length;
         
-        // Actualizar el contador de productos en el dashboard
         const productCountElement = document.querySelector('.dashboard-cards .card:nth-child(1) .card-value');
         if (productCountElement) {
             productCountElement.textContent = productsCount.toLocaleString();
         }
-        
-        // También podrías calcular otros contadores aquí
-        // como productos con stock bajo, productos sin stock, etc.
     }
     
-    // Función para agregar producto manualmente (puedes llamarla desde consola para pruebas)
     window.addManualProduct = function(productData) {
         const defaultProduct = {
             name: "Nuevo Producto Manual",
@@ -410,12 +375,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const newProduct = productData || defaultProduct;
         productManager.addProduct(newProduct);
-        loadProductsTable(); // Actualizar tabla
+        loadProductsTable();
         alert('Producto agregado exitosamente');
         return newProduct;
     };
     
-    // Función para probar desde consola del navegador
     window.testAddProduct = function() {
         const testProduct = {
             name: "Producto de Prueba",
@@ -428,6 +392,5 @@ document.addEventListener('DOMContentLoaded', function() {
         return addManualProduct(testProduct);
     };
     
-    // Inicializar contadores del dashboard
     updateDashboardCounters();
 });

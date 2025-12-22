@@ -1,25 +1,17 @@
-// Reporte de Stock Bajo - Funcionalidad Completa
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Variables globales
     let lowStockProducts = [];
     let filteredProducts = [];
     let selectedProducts = new Set();
     
-    // Inicializar la aplicación
     initReport();
     
-    // Funciones de inicialización
     function initReport() {
         loadLowStockData();
         setupEventListeners();
         initializeCharts();
     }
     
-    // Cargar datos de stock bajo
     function loadLowStockData() {
-        // Simular datos de productos con stock bajo
-        // En una aplicación real, esto vendría de una API o base de datos
         lowStockProducts = generateMockLowStockData();
         filteredProducts = [...lowStockProducts];
         
@@ -29,17 +21,13 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCharts();
     }
     
-    // Configurar event listeners
     function setupEventListeners() {
-        // Filtros
         document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
         document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
         
-        // Selección
         document.getElementById('selectAllReport').addEventListener('change', toggleSelectAllProducts);
         document.getElementById('selectAllProducts').addEventListener('click', selectAllProducts);
         
-        // Exportación
         document.getElementById('exportPDFBtn').addEventListener('click', () => exportReport('pdf'));
         document.getElementById('exportExcelBtn').addEventListener('click', () => exportReport('excel'));
         document.getElementById('exportCSVBtn').addEventListener('click', () => exportReport('csv'));
@@ -47,26 +35,22 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('exportSelectedBtn').addEventListener('click', exportSelectedProducts);
         document.getElementById('confirmExportBtn').addEventListener('click', confirmExport);
         
-        // Reposición
         document.getElementById('restockSelectedBtn').addEventListener('click', openRestockModal);
         document.getElementById('requestRestockBtn').addEventListener('click', openRestockModal);
         document.getElementById('confirmRestockBtn').addEventListener('click', confirmRestock);
         document.getElementById('cancelRestockBtn').addEventListener('click', closeRestockModal);
         
-        // Acciones rápidas
         document.getElementById('printReportBtn').addEventListener('click', printReport);
         document.getElementById('generatePurchaseOrderBtn').addEventListener('click', generatePurchaseOrder);
         document.getElementById('sendAlertsBtn').addEventListener('click', sendAlerts);
         document.getElementById('scheduleRestockBtn').addEventListener('click', scheduleRestock);
         document.getElementById('comparePricesBtn').addEventListener('click', comparePrices);
         
-        // Cerrar modales
         document.getElementById('closeRestockModal')?.addEventListener('click', closeRestockModal);
         document.getElementById('closeExportModal')?.addEventListener('click', closeExportModal);
         document.getElementById('cancelExportBtn')?.addEventListener('click', closeExportModal);
     }
     
-    // Generar datos de prueba
     function generateMockLowStockData() {
         const categories = ['Electrónica', 'Ropa', 'Alimentos', 'Hogar', 'Oficina'];
         const suppliers = ['Distribuidora Martínez', 'Mayorista Central', 'Importadora del Norte', 'Proveedor Externo'];
@@ -95,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Actualizar estadísticas del reporte
     function updateReportStats() {
         const totalLowStock = lowStockProducts.length;
         const totalRiskValue = lowStockProducts.reduce((sum, product) => sum + parseFloat(product.valueAtRisk), 0);
@@ -108,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('suppliersCount').textContent = suppliers.length;
     }
     
-    // Renderizar tabla de productos
     function renderProductsTable() {
         const tbody = document.getElementById('lowStockTableBody');
         tbody.innerHTML = '';
@@ -159,13 +141,11 @@ document.addEventListener('DOMContentLoaded', function() {
             estimatedCost += Math.max(0, product.stockMin - product.stockCurrent) * product.price;
         });
         
-        // Actualizar resumen
         document.getElementById('productsShown').textContent = filteredProducts.length;
         document.getElementById('totalRiskTable').textContent = `$${totalRisk.toFixed(2)}`;
         document.getElementById('totalToRestock').textContent = `${totalToRestock} unidades`;
         document.getElementById('estimatedCost').textContent = `$${estimatedCost.toFixed(2)}`;
         
-        // Añadir event listeners a los checkboxes
         document.querySelectorAll('.product-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const productId = parseInt(this.dataset.id);
@@ -178,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Añadir event listeners a los botones de acción
         document.querySelectorAll('.restock-single-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const productId = parseInt(this.dataset.id);
@@ -194,20 +173,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Aplicar filtros
     function applyFilters() {
         const categoryFilter = document.getElementById('categoryFilterReport').value;
         const priorityFilter = document.getElementById('priorityFilter').value;
         const daysFilter = document.getElementById('daysFilter').value;
         
         filteredProducts = lowStockProducts.filter(product => {
-            // Filtro por categoría
             if (categoryFilter && product.category !== categoryFilter) return false;
             
-            // Filtro por prioridad
             if (priorityFilter && product.priority !== priorityFilter) return false;
             
-            // Filtro por días
             if (daysFilter && product.daysLow < parseInt(daysFilter)) return false;
             
             return true;
@@ -216,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
         renderProductsTable();
     }
     
-    // Restablecer filtros
     function resetFilters() {
         document.getElementById('categoryFilterReport').value = '';
         document.getElementById('priorityFilter').value = '';
@@ -226,7 +200,6 @@ document.addEventListener('DOMContentLoaded', function() {
         renderProductsTable();
     }
     
-    // Seleccionar todos los productos
     function toggleSelectAllProducts() {
         const selectAll = document.getElementById('selectAllReport').checked;
         const checkboxes = document.querySelectorAll('.product-checkbox');
@@ -250,12 +223,10 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleSelectAllProducts();
     }
     
-    // Actualizar contador de seleccionados
     function updateSelectedCount() {
         const count = selectedProducts.size;
         document.getElementById('selectedCount')?.textContent = count;
         
-        // Habilitar/deshabilitar botones según selección
         const exportSelectedBtn = document.getElementById('exportSelectedBtn');
         const restockSelectedBtn = document.getElementById('restockSelectedBtn');
         
@@ -263,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (restockSelectedBtn) restockSelectedBtn.disabled = count === 0;
     }
     
-    // Inicializar gráficos
     function initializeCharts() {
         window.categoryChart = new Chart(
             document.getElementById('categoryChart'),
@@ -321,9 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
     }
     
-    // Actualizar gráficos con datos
     function updateCharts() {
-        // Gráfico por categoría
         const categoryCounts = {};
         lowStockProducts.forEach(product => {
             categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
@@ -333,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.categoryChart.data.datasets[0].data = Object.values(categoryCounts);
         window.categoryChart.update();
         
-        // Gráfico de tendencia (datos simulados)
         const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
         const trendData = days.map(() => Math.floor(Math.random() * 20) + 5);
         
@@ -342,7 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.trendChart.update();
     }
     
-    // Actualizar lista de proveedores recomendados
     function updateSuppliersList() {
         const suppliersList = document.getElementById('suppliersList');
         const suppliers = [...new Set(lowStockProducts.map(p => p.supplier))];
@@ -364,7 +330,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
     }
     
-    // Abrir modal de reposición
     function openRestockModal(productIds = null) {
         const modal = document.getElementById('restockModal');
         const productsToRestock = productIds ? 
@@ -376,7 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Actualizar lista de productos
         const productsList = document.getElementById('restockProductsList');
         let totalCost = 0;
         
@@ -401,16 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.getElementById('restockTotal').textContent = `$${totalCost.toFixed(2)}`;
         
-        // Mostrar modal
         modal.style.display = 'block';
     }
     
-    // Cerrar modal de reposición
     function closeRestockModal() {
         document.getElementById('restockModal').style.display = 'none';
     }
     
-    // Confirmar reposición
     function confirmRestock() {
         const supplier = document.getElementById('restockSupplier').value;
         const priority = document.getElementById('restockPriority').value;
@@ -421,34 +382,27 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Aquí iría la lógica para enviar la solicitud de reposición
         alert(`Solicitud de reposición enviada a ${supplier} con prioridad ${priority}.`);
         
-        // Cerrar modal
         closeRestockModal();
         
-        // Limpiar selección
         selectedProducts.clear();
         document.getElementById('selectAllReport').checked = false;
         document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
         updateSelectedCount();
     }
     
-    // Exportar reporte
     function exportReport(format) {
         const modal = document.getElementById('exportModal');
         modal.style.display = 'block';
         
-        // Configurar el formato seleccionado
         document.getElementById('exportFormat').value = format;
     }
     
-    // Cerrar modal de exportación
     function closeExportModal() {
         document.getElementById('exportModal').style.display = 'none';
     }
     
-    // Confirmar exportación
     function confirmExport() {
         const scope = document.querySelector('input[name="exportScope"]:checked').value;
         const format = document.getElementById('exportFormat').value;
@@ -468,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
         
-        // Aquí iría la lógica real de exportación
         alert(`Exportando ${productsToExport.length} productos en formato ${format.toUpperCase()}...`);
         
         if (email) {
@@ -478,7 +431,6 @@ document.addEventListener('DOMContentLoaded', function() {
         closeExportModal();
     }
     
-    // Exportar productos seleccionados
     function exportSelectedProducts() {
         if (selectedProducts.size === 0) {
             alert('Por favor, selecciona al menos un producto para exportar.');
@@ -488,36 +440,26 @@ document.addEventListener('DOMContentLoaded', function() {
         exportReport('excel');
     }
     
-    // Imprimir reporte
     function printReport() {
         window.print();
     }
     
-    // Generar orden de compra
     function generatePurchaseOrder() {
         alert('Generando orden de compra...');
-        // Lógica para generar orden de compra
     }
     
-    // Enviar alertas
     function sendAlerts() {
         alert('Enviando alertas a los responsables...');
-        // Lógica para enviar alertas
     }
     
-    // Programar reposición
     function scheduleRestock() {
         alert('Abriendo calendario para programar reposición...');
-        // Lógica para programar reposición
     }
     
-    // Comparar precios
     function comparePrices() {
         alert('Comparando precios entre proveedores...');
-        // Lógica para comparar precios
     }
     
-    // Ver detalles del producto
     function viewProductDetails(productId) {
         const product = lowStockProducts.find(p => p.id === productId);
         if (product) {
@@ -532,12 +474,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Función para obtener productos desde el inventario principal
     function getProductsFromInventory() {
-        // Esta función debería comunicarse con el inventario principal
-        // Para obtener los productos reales con stock bajo
         try {
-            // Intentar obtener datos del localStorage o sessionStorage
             const inventoryData = localStorage.getItem('inventoryData') || 
                                  sessionStorage.getItem('inventoryData');
             
