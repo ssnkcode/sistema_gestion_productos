@@ -45,8 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             productsData = await productManager.getAllProducts();
         } catch (error) {
-            console.error('Error cargando productos:', error);
-            showNotification('Error al cargar inventario', 'error');
+            console.error(error);
             productsData = [];
         }
     }
@@ -68,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     function renderProductsTable(products = getFilteredProducts()) {
+        if (!inventoryTableBody) return;
         inventoryTableBody.innerHTML = '';
         
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -78,12 +78,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             inventoryTableBody.innerHTML = `
                 <tr>
                     <td colspan="9" style="text-align: center; padding: 40px;">
-                        <div style="font-size: 1.2rem; color: #7f8c8d; margin-bottom: 10px;">
-                            <i class="fas fa-box-open" style="font-size: 3rem;"></i>
-                        </div>
-                        <div style="font-size: 1rem; color: #7f8c8d;">
-                            No se encontraron productos
-                        </div>
+                        <div>No se encontraron productos</div>
                     </td>
                 </tr>
             `;
@@ -112,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     </div>
                 </td>
                 <td>${product.code}</td>
-                <td>${product.category.charAt(0).toUpperCase() + product.category.slice(1)}</td>
+                <td>${product.category}</td>
                 <td>${formatCurrency(product.salePrice)}</td>
                 <td>${product.stock}</td>
                 <td>
@@ -258,21 +253,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     function updateSelectedCount() {
-        selectedCount.textContent = selectedProducts.size;
-        selectedProductsList.innerHTML = '';
-        selectedProducts.forEach(id => {
-            const product = productsData.find(p => p._id === id);
-            if (product) {
-                const item = document.createElement('div');
-                item.className = 'selected-product-item';
-                item.innerHTML = `
-                    <span>${product.name}</span>
-                    <span>${product.code}</span>
-                `;
-                selectedProductsList.appendChild(item);
-            }
-        });
-        applyBulkBtn.disabled = selectedProducts.size === 0 || !bulkActionSelect.value;
+        if(selectedCount) selectedCount.textContent = selectedProducts.size;
+        if(selectedProductsList) {
+            selectedProductsList.innerHTML = '';
+            selectedProducts.forEach(id => {
+                const product = productsData.find(p => p._id === id);
+                if (product) {
+                    const item = document.createElement('div');
+                    item.className = 'selected-product-item';
+                    item.innerHTML = `<span>${product.name}</span>`;
+                    selectedProductsList.appendChild(item);
+                }
+            });
+        }
+        if(applyBulkBtn) applyBulkBtn.disabled = selectedProducts.size === 0 || !bulkActionSelect.value;
     }
     
     function openAddProductModal() {
@@ -328,8 +322,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         
         saveProductBtn.disabled = true;
-        saveProductBtn.textContent = 'Guardando...';
-
+        
         const productData = {
             name: document.getElementById('productName').value,
             code: document.getElementById('productCode').value,
@@ -347,46 +340,33 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             if (currentProductId) {
                 await productManager.updateProduct(currentProductId, productData);
-                showNotification('Producto actualizado correctamente', 'success');
             } else {
                 await productManager.addProduct(productData);
-                showNotification('Producto agregado correctamente', 'success');
             }
             
             await loadProductsData();
             renderProductsTable();
             closeAllModals();
         } catch (error) {
-            console.error('Error al guardar:', error);
-            showNotification(error.message, 'error');
+            console.error(error);
         } finally {
             saveProductBtn.disabled = false;
-            saveProductBtn.textContent = 'Guardar Producto';
         }
     }
     
     async function deleteProduct() {
         confirmDeleteBtn.disabled = true;
-        confirmDeleteBtn.textContent = 'Eliminando...';
         
         try {
-            const success = await productManager.deleteProduct(currentProductId);
-            
-            if (success) {
-                selectedProducts.delete(currentProductId);
-                await loadProductsData();
-                renderProductsTable();
-                closeAllModals();
-                showNotification('Producto eliminado correctamente', 'success');
-            } else {
-                showNotification('Error al eliminar producto', 'error');
-            }
+            await productManager.deleteProduct(currentProductId);
+            selectedProducts.delete(currentProductId);
+            await loadProductsData();
+            renderProductsTable();
+            closeAllModals();
         } catch (error) {
-            console.error('Error eliminando:', error);
-            showNotification('Error al procesar la solicitud', 'error');
+            console.error(error);
         } finally {
             confirmDeleteBtn.disabled = false;
-            confirmDeleteBtn.textContent = 'Eliminar Producto';
         }
     }
     
@@ -394,143 +374,48 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (selectedProducts.size === 0) return;
         
         applyBulkBtn.disabled = true;
-        applyBulkBtn.textContent = 'Aplicando...';
         
         const action = bulkActionSelect.value;
         const value = bulkActionValue.value;
         const ids = Array.from(selectedProducts);
         let updateData = {};
 
-        switch (action) {
-            case 'price-increase':
-            case 'price-decrease':
-                showNotification('Actualización masiva de precios por porcentaje no soportada en API básica aún.', 'info');
-                applyBulkBtn.disabled = false;
-                applyBulkBtn.textContent = 'Aplicar Cambios';
-                return;
-            case 'update-category':
-                updateData.category = value;
-                break;
-            case 'update-supplier':
-                updateData.supplier = value;
-                break;
-            case 'update-status':
-                updateData.status = value;
-                break;
-        }
+        if (action === 'update-category') updateData.category = value;
+        else if (action === 'update-supplier') updateData.supplier = value;
+        else if (action === 'update-status') updateData.status = value;
         
         try {
-            const success = await productManager.bulkUpdate(ids, updateData);
-            
-            if (success) {
-                selectedProducts.clear();
-                selectAllCheckbox.checked = false;
-                await loadProductsData();
-                renderProductsTable();
-                closeAllModals();
-                showNotification('Actualización masiva aplicada correctamente', 'success');
-            } else {
-                showNotification('Hubo un problema con la actualización masiva', 'error');
-            }
+            await productManager.bulkUpdate(ids, updateData);
+            selectedProducts.clear();
+            selectAllCheckbox.checked = false;
+            await loadProductsData();
+            renderProductsTable();
+            closeAllModals();
         } catch (error) {
-            console.error('Error bulk update:', error);
-            showNotification('Error de conexión', 'error');
+            console.error(error);
         } finally {
             applyBulkBtn.disabled = false;
-            applyBulkBtn.textContent = 'Aplicar Cambios';
         }
     }
     
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-            <button class="notification-close">&times;</button>
-        `;
-        
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-width: 300px;
-            max-width: 400px;
-            z-index: 10000;
-            animation: slideIn 0.3s ease-out;
-        `;
-        
-        const notificationStyle = document.createElement('style');
-        if (!document.getElementById('notification-style')) {
-            notificationStyle.id = 'notification-style';
-            notificationStyle.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                .notification-content { display: flex; align-items: center; gap: 10px; }
-                .notification-close { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
-            `;
-            document.head.appendChild(notificationStyle);
-        }
-        
-        document.body.appendChild(notification);
-        
-        notification.querySelector('.notification-close').addEventListener('click', () => {
-            notification.remove();
-        });
-        
-        setTimeout(() => {
-            if (notification.parentNode) notification.remove();
-        }, 5000);
-    }
+    if(toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', () => sidebar.classList.toggle('active'));
+    if(addProductBtn) addProductBtn.addEventListener('click', openAddProductModal);
+    if(closeProductModal) closeProductModal.addEventListener('click', closeAllModals);
+    if(cancelProductBtn) cancelProductBtn.addEventListener('click', closeAllModals);
+    if(saveProductBtn) saveProductBtn.addEventListener('click', saveProduct);
+    if(closeConfirmModal) closeConfirmModal.addEventListener('click', closeAllModals);
+    if(cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeAllModals);
+    if(confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', deleteProduct);
+    if(closeBulkModal) closeBulkModal.addEventListener('click', closeAllModals);
+    if(cancelBulkBtn) cancelBulkBtn.addEventListener('click', closeAllModals);
+    if(applyBulkBtn) applyBulkBtn.addEventListener('click', applyBulkUpdate);
+    if(bulkUpdateBtn) bulkUpdateBtn.addEventListener('click', openBulkUpdateModal);
     
-    toggleSidebarBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
+    if(searchInput) searchInput.addEventListener('input', () => { currentPage = 1; renderProductsTable(); });
+    if(categoryFilter) categoryFilter.addEventListener('change', () => { currentPage = 1; renderProductsTable(); });
+    if(statusFilter) statusFilter.addEventListener('change', () => { currentPage = 1; renderProductsTable(); });
     
-    addProductBtn.addEventListener('click', openAddProductModal);
-    
-    closeProductModal.addEventListener('click', closeAllModals);
-    cancelProductBtn.addEventListener('click', closeAllModals);
-    saveProductBtn.addEventListener('click', saveProduct);
-    
-    closeConfirmModal.addEventListener('click', closeAllModals);
-    cancelDeleteBtn.addEventListener('click', closeAllModals);
-    confirmDeleteBtn.addEventListener('click', deleteProduct);
-    
-    closeBulkModal.addEventListener('click', closeAllModals);
-    cancelBulkBtn.addEventListener('click', closeAllModals);
-    applyBulkBtn.addEventListener('click', applyBulkUpdate);
-    
-    bulkUpdateBtn.addEventListener('click', openBulkUpdateModal);
-    
-    searchInput.addEventListener('input', () => {
-        currentPage = 1;
-        renderProductsTable();
-    });
-    
-    categoryFilter.addEventListener('change', () => {
-        currentPage = 1;
-        renderProductsTable();
-    });
-    
-    statusFilter.addEventListener('change', () => {
-        currentPage = 1;
-        renderProductsTable();
-    });
-    
-    selectAllCheckbox.addEventListener('change', function() {
+    if(selectAllCheckbox) selectAllCheckbox.addEventListener('change', function() {
         const checkboxes = document.querySelectorAll('.product-checkbox');
         const currentPageProducts = getFilteredProducts().slice(
             (currentPage - 1) * itemsPerPage,
@@ -538,207 +423,35 @@ document.addEventListener('DOMContentLoaded', async function() {
         );
         
         if (this.checked) {
-            currentPageProducts.forEach(product => {
-                selectedProducts.add(product._id);
-            });
+            currentPageProducts.forEach(product => selectedProducts.add(product._id));
         } else {
-            currentPageProducts.forEach(product => {
-                selectedProducts.delete(product._id);
-            });
+            currentPageProducts.forEach(product => selectedProducts.delete(product._id));
         }
         
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-        
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
         updateSelectedCount();
     });
     
-    exportBtn.addEventListener('click', () => {
-        const filteredProducts = getFilteredProducts();
-        
-        if (filteredProducts.length === 0) {
-            showNotification('No hay datos para exportar', 'info');
-            return;
-        }
-        
-        showNotification('Generando archivo...', 'info');
-        exportToExcelNative(filteredProducts);
-    });
-    
-    function getCurrentDateTime() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        return `${year}${month}${day}_${hours}${minutes}`;
-    }
-    
-    function exportToExcelNative(products) {
-        try {
-            const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            
-            const headers = ['Nombre', 'Código', 'Categoría', 'Precio Venta', 'Stock', 'Estado', 'Proveedor', 'Descripción'];
-            
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.textContent = headerText;
-                headerRow.appendChild(th);
-            });
-            
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-            
-            const tbody = document.createElement('tbody');
-            
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                const cells = [
-                    product.name,
-                    product.code,
-                    product.category,
-                    `$${product.salePrice.toFixed(2)}`,
-                    product.stock,
-                    product.status,
-                    product.supplier,
-                    product.description || ''
-                ];
-                
-                cells.forEach(cellText => {
-                    const td = document.createElement('td');
-                    td.textContent = cellText;
-                    row.appendChild(td);
-                });
-                
-                tbody.appendChild(row);
-            });
-            
-            table.appendChild(tbody);
-            
-            const html = `
-            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-            <head>
-                <meta charset="UTF-8">
-                </head>
-            <body>
-                ${table.outerHTML}
-            </body>
-            </html>
-            `;
-            
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Inventario_${getCurrentDateTime()}.xls`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            showNotification(`Archivo Excel generado con ${products.length} productos`, 'success');
-            
-        } catch (error) {
-            console.error('Error al exportar:', error);
-            showNotification('Error al generar el archivo', 'info');
-        }
-    }
-    
-    bulkActionSelect.addEventListener('change', function() {
+    if(bulkActionSelect) bulkActionSelect.addEventListener('change', function() {
         const action = this.value;
-        bulkActionDetails.style.display = action ? 'block' : 'none';
-        
-        let label = '';
-        let placeholder = '';
-        
-        switch (action) {
-            case 'price-increase':
-                label = 'Porcentaje de aumento (%)';
-                placeholder = 'Ej: 10';
-                break;
-            case 'price-decrease':
-                label = 'Porcentaje de reducción (%)';
-                placeholder = 'Ej: 15';
-                break;
-            case 'update-category':
-                label = 'Nueva categoría';
-                placeholder = 'Ej: electronica';
-                break;
-            case 'update-supplier':
-                label = 'Nuevo proveedor';
-                placeholder = 'Ej: Proveedor Nuevo';
-                break;
-            case 'update-status':
-                label = 'Nuevo estado';
-                placeholder = 'in-stock, low-stock, out-of-stock';
-                break;
-        }
-        
-        document.getElementById('bulkActionLabel').textContent = label;
-        bulkActionValue.placeholder = placeholder;
-        bulkActionValue.value = '';
-        
+        if(bulkActionDetails) bulkActionDetails.style.display = action ? 'block' : 'none';
         updateSelectedCount();
     });
     
-    bulkActionValue.addEventListener('input', updateSelectedCount);
-    
-    const imageUploadArea = document.getElementById('imageUploadArea');
-    const productImageInput = document.getElementById('productImage');
-    
-    if (imageUploadArea && productImageInput) {
-        imageUploadArea.addEventListener('click', () => {
-            productImageInput.click();
-        });
-        
-        imageUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            imageUploadArea.style.borderColor = '#3498db';
-            imageUploadArea.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
-        });
-        
-        imageUploadArea.addEventListener('dragleave', () => {
-            imageUploadArea.style.borderColor = '#ddd';
-            imageUploadArea.style.backgroundColor = '';
-        });
-        
-        imageUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            imageUploadArea.style.borderColor = '#ddd';
-            imageUploadArea.style.backgroundColor = '';
-            
-            if (e.dataTransfer.files.length) {
-                const file = e.dataTransfer.files[0];
-                if (file.type.startsWith('image/')) {
-                    productImageInput.files = e.dataTransfer.files;
-                    showNotification('Imagen cargada correctamente', 'success');
-                } else {
-                    showNotification('Por favor, seleccione un archivo de imagen válido', 'info');
-                }
-            }
-        });
-    }
+    if(bulkActionValue) bulkActionValue.addEventListener('input', updateSelectedCount);
     
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeAllModals();
-            }
+            if (e.target === modal) closeAllModals();
         });
     });
     
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeAllModals();
-        }
+        if (e.key === 'Escape') closeAllModals();
     });
     
     document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 992) {
+        if (window.innerWidth <= 992 && sidebar) {
             if (!sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target) && sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
             }
